@@ -1,0 +1,40 @@
+spring:
+  application:
+    name: zuultest
+server:
+  port: 10001
+
+eureka:
+  client:
+    service-url:
+      defaultZone: http://localhost:8088/eureka/
+    registry-fetch-interval-seconds: 5
+  instance:
+    prefer-ip-address: true
+    ip-address: 127.0.0.1
+zuul:
+  prefix: /adc
+  routes:
+    zuul-01:
+      path: /provider/**
+      #      url: http://127.0.0.1:8001  可指定地址
+      service-id: provide1
+    zuul-02:
+      path: /provider01/**
+      service-id: provide1
+  retryable: true
+
+  ribbon:
+    ConnectTimeout: 250 # 连接超时时间（ms），默认值为250ms
+    ReadTimeout: 2000 # 通信超时时间（ms），默认值为2000ms
+    OkToRetryOnAllOperations: true # 是否对所有操作都进行重试
+    MaxAutoRetriesNextServer: 2 # 对同一服务不同实例重试次数（同一服务下集群个数的重试次数）
+    MaxAutoRetries: 2 # 对同一实例重试的次数（单个集群节点服务重试的次数）
+  # 开启熔断机制，超过六秒即开启熔断机制，网关内的时间排序：zuul的通信时间 > hystrix熔断时间 > retry重试时间
+  hystrix:
+    command:
+      default:
+        execution:
+          isolation:
+            thread:
+              timeoutInMilliseconds: 6000
